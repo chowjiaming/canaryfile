@@ -40,40 +40,45 @@ src/
     markdown.ts     # --markdown (PR comments, badge data)
 
 ## Adapter interface
+```
 interface AgentAdapter {
   id: string;
-  detect(): Promise<boolean>;        // is the agent CLI installed?
-  version(): Promise<string>;        // for fingerprinting
-  run(task: ResolvedTask, ctx: RunContext): Promise<RunResult>;
+  detect(): Promise<boolean>;
+  version(): Promise<string>;
+  run(task: { prompt: string }, ctx: RunContext): Promise<AgentOutcome>;
 }
 
-interface RunResult {
-  ok: boolean;              // all verifiers passed
-  verifierResults: { cmd: string; exitCode: number }[];
-  costUsd: number | null;   // null if adapter can't report
+interface AgentOutcome {
+  costUsd: number | null;
   tokensIn: number | null;
   tokensOut: number | null;
   durationMs: number;
-  model: string;            // as reported by the agent
-  transcriptPath: string;   // saved under .canaryfile/runs/
+  model: string | null;     // as reported by the agent; fingerprint uses config model
+  transcriptPath: string;
+  timedOut: boolean;
+  exitCode: number | null;
 }
+```
 
-## Execution flow (canaryfile test)
+The adapter runs the agent only. The executor runs shell verifiers afterward
+and builds the recorded result.
+
+## Execution flow (canaryfile record / test)
 1. Load + validate canaryfile.yaml
 2. Resolve adapter; fail fast if not installed (exit 4)
-3. Compute fingerprint (model, agent version, sha256 of CLAUDE.md,
-   .mcp.json, canaryfile.yaml)
-4. Load latest snapshot; warn if fingerprint changed (that's the
-   point — but the user should see WHY results differ)
-5. For each selected task (filter by --tag):
-   a. git worktree add .canaryfile/worktrees/<task>-<i> <setup ref>
-   b. Start services (if any), wait for ready probe
-   c. adapter.run() with timeout; then run verifiers in the worktree
-   d. Stop services, remove worktree
-   e. Enforce budget after every run; hard stop → exit 3
-6. Compute verdicts vs snapshot (see docs/STATS.md)
-7. Print table; write .canaryfile/runs/<timestamp>/ artifacts
-8. Exit 0 (pass), 1 (regression), or 2 (usage error)
+3. Compute fingerprint (config model, agent version, sha256 of CLAUDE.md,
+   .mcp.json at git root, canaryfile.yaml at yaml dir)
+4. For each selected task (filter by --task / --tag), sequentially:
+   a. git worktree add <yaml-dir>/.canaryfile/worktrees/<task>-<i> <setup ref>
+   b. adapter.run() with timeout in the mapped yaml-dir cwd
+   c. run verifiers in that cwd
+   d. remove worktree
+   e. Enforce budget after every run; hard stop remaining runs of that task
+5. Write snapshot + latest.json; print k/n + cost table
+6. Exit 0 (record finished), 2 (usage), 3 (budget), or 4 (adapter)
+
+`canaryfile test` (compare to latest snapshot, Wilson verdicts, exit 1 on
+regression) is M2.
 
 ## Key invariants
 - The user's working tree and current branch are NEVER modified.

@@ -1,8 +1,12 @@
 # Snapshot format
 
-Path: .canaryfile/snapshots/<ISO-date>-<fingerprint-short>.json
+Path: .canaryfile/snapshots/<ISO-8601-UTC-datetime>-<fingerprint-short>.json
 Latest pointer: .canaryfile/snapshots/latest.json (copy, not symlink)
 Snapshots are committed to git. .canaryfile/runs/ is gitignored.
+
+`fingerprint-short` is the first 8 hex chars of `sha256` of the canonical
+(sorted-key) fingerprint JSON. `createdAt` matches the datetime in the
+filename. Fingerprint `model` is the config value (`default` is valid).
 
 {
   "version": 1,
@@ -10,7 +14,7 @@ Snapshots are committed to git. .canaryfile/runs/ is gitignored.
   "fingerprint": {
     "adapter": "claude-code",
     "agentVersion": "1.2.3",
-    "model": "claude-sonnet-X",
+    "model": "default",
     "configHash": "sha256:...",     // canaryfile.yaml
     "contextHash": "sha256:..."    // CLAUDE.md + .mcp.json, sorted
   },

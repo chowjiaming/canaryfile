@@ -8,7 +8,8 @@
       "exactOptionalPropertyTypes": true,
       "declaration": true,
       "outDir": "dist",
-      "skipLibCheck": true
+      "skipLibCheck": true,
+      "types": ["node"]
     },
     "include": ["src/**/*", "tsup.config.ts"]
   }
