@@ -1,9 +1,9 @@
 {
-    "name": "canaryfile-fixture",
-    "private": true,
-    "type": "module",
-    "description": "Demo + integration fixture for canaryfile. Zero dependencies.",
-    "scripts": {
-      "test": "node --test test/"
-    }
+  "name": "canaryfile-fixture",
+  "private": true,
+  "type": "module",
+  "description": "Demo + integration fixture for canaryfile. Zero dependencies.",
+  "scripts": {
+    "test": "node --test"
   }
+}
