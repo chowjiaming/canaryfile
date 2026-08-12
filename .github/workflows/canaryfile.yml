@@ -1,0 +1,27 @@
+name: canaryfile
+on:
+  pull_request:
+    paths:
+      - "examples/fixture/**"
+      - ".github/workflows/canaryfile.yml"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  agent-regressions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # worktrees + fixture branches need history
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm i -g canaryfile
+      - name: canaryfile test
+        working-directory: examples/fixture
+        run: canaryfile test --tag smoke --markdown > results.md
+      # PR-comment step: reuse the composite action's github-script
+      # block once the Action itself is published (M4)

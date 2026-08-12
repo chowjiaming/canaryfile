@@ -1,17 +1,25 @@
 {
   "name": "canaryfile",
-  "version": "1.0.0",
-  "description": "> Snapshot testing for your AI coding agent. > Know when a model upgrade, CLAUDE.md edit, or MCP change breaks > your workflow — before you merge it.",
-  "main": "index.js",
-  "directories": {
-    "doc": "docs",
-    "example": "examples"
+  "version": "0.1.0",
+  "description": "Snapshot testing for your AI coding agent. Know when a model upgrade, CLAUDE.md edit, or MCP change breaks your workflow before you merge it.",
+  "type": "module",
+  "bin": {
+    "canaryfile": "dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs"
+  "devDependencies": {
+    "eslint": "^10.8.1",
+    "typescript-eslint": "^8.67.0"
+  }
 }
