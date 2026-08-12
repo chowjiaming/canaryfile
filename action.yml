@@ -1,0 +1,42 @@
+name: canaryfile
+description: Regression-test your AI coding agent setup
+branding:
+  icon: check-circle
+  color: green
+inputs:
+  tags:
+    description: Task tags to run
+    default: smoke
+  runs:
+    description: Runs per task
+    default: "3"
+  budget:
+    description: Total budget in USD
+    default: "2.00"
+  comment:
+    description: Comment results on the PR
+    default: "true"
+runs:
+  using: composite
+  steps:
+    - name: Install canaryfile
+      run: npm i -g canaryfile
+      shell: bash
+    - name: Run canaryfile
+      id: run
+      run: canaryfile test --tag ${{ inputs.tags }} --runs ${{ inputs.runs }} --markdown > results.md
+      shell: bash
+    - name: Comment on PR
+      if: inputs.comment == 'true' && github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const body = '## canaryfile results\n\n' +
+            fs.readFileSync('results.md', 'utf8');
+          await github.rest.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+            body,
+          });

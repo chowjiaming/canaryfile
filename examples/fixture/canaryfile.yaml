@@ -1,0 +1,37 @@
+version: 1
+
+agent:
+  adapter: claude-code
+  timeout: 180s
+
+defaults:
+  runs: 3 # fixture is cheap; keep demo runs fast
+  budget: 0.25
+
+tasks:
+  - name: fix-date-off-by-one
+    prompt: |
+      src/dates.js renders event dates one day behind in timezones
+      behind UTC (e.g. America/Toronto). Find and fix the bug.
+    setup: fixture/date-bug
+    verify:
+      - run: TZ=America/Toronto node --test test/dates.test.js
+    tags: [smoke, bugfix]
+
+  - name: restore-health-endpoint
+    prompt: |
+      test/health.test.js expects a health handler in src/health.js
+      returning { "ok": true }. Make the test pass.
+    setup: fixture/missing-health
+    verify:
+      - run: node --test test/health.test.js
+      - run: grep -q "ok" src/health.js
+    tags: [smoke, feature]
+
+  - name: fix-logging-levels
+    prompt: |
+      src/logging.js silently drops error-level logs. Fix it.
+    setup: fixture/logging-regression
+    verify:
+      - run: node --test test/logging.test.js
+    tags: [bugfix] # deliberately NOT in smoke: demonstrates tag filtering
