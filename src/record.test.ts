@@ -88,7 +88,7 @@ describe("record", () => {
     expect(latest.fingerprint.adapter).toBe("claude-code");
     expect(latest.tasks["smoke-task"]?.runs).toBe(1);
     expect(latest.tasks["smoke-task"]?.passes).toBe(1);
-    expect(latest.tasks["smoke-task"]?.flaky).toBe(false);
+    expect(latest.tasks["smoke-task"]?.flaky).toBe(true);
 
     await expect(readFile(path.join(dir, "ORIGINAL"), "utf8")).resolves.toBe("keep");
     await expect(access(path.join(dir, "AGENT_WAS_HERE"))).rejects.toThrow();

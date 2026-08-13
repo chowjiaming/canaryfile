@@ -74,11 +74,11 @@ and builds the recorded result.
    c. run verifiers in that cwd
    d. remove worktree
    e. Enforce budget after every run; hard stop remaining runs of that task
-5. Write snapshot + latest.json; print k/n + cost table
-6. Exit 0 (record finished), 2 (usage), 3 (budget), or 4 (adapter)
-
-`canaryfile test` (compare to latest snapshot, Wilson verdicts, exit 1 on
-regression) is M2.
+5. `record`: write snapshot + latest.json; print k/n + cost table.
+   `test`: compare to latest.json (Wilson + cost); print verdict table.
+   Fingerprint mismatch is printed, not an error.
+6. Exit 0 (pass / record finished), 1 (regression), 2 (usage), 3 (budget),
+   or 4 (adapter)
 
 ## Key invariants
 - The user's working tree and current branch are NEVER modified.

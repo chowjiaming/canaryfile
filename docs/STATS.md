@@ -22,9 +22,16 @@ slack s = 0.1 (configurable: stats.slack in canaryfile.yaml)
                    is not met
   PASS        otherwise
 
-Reference verdicts at n0 = n1 = 5, s = 0.1 (encode as unit tests):
-  5/5 → 5/5 PASS | 5/5 → 4/5 PASS | 5/5 → 3/5 WARN
-  5/5 → ≤2/5 FAIL | 3/5 → 1/5 FAIL | 0/5 → 5/5 PASS (improvement)
+Reference verdicts at n0 = n1 = 5, s = 0.1, z = 1.96 (encode as unit tests).
+Wilson 95% intervals are wide at n = 5, so only a collapse to 0/5
+separates from a 5/5 baseline:
+
+  5/5 → 5/5 PASS | 5/5 → 4/5 PASS | 5/5 → 3/5 PASS
+  5/5 → 2/5 PASS | 5/5 → 1/5 PASS | 5/5 → 0/5 FAIL
+  3/5 → 1/5 PASS | 0/5 → 5/5 PASS (improvement)
+
+A 3/5 snapshot has interval width > 0.5 and is marked flaky at record
+time — flaky tasks never gate.
 
 ## Flaky-task detection
 If the snapshot's own interval width (U0 - L0) > 0.5, mark the task

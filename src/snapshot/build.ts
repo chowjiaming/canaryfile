@@ -1,4 +1,5 @@
 import type { TaskExecution } from "../runner/executor.js";
+import { isFlakyInterval, wilsonInterval } from "../stats/wilson.js";
 import { median, type Snapshot, type TaskSnapshot } from "./format.js";
 import type { Fingerprint } from "./fingerprint.js";
 
@@ -22,11 +23,14 @@ export function buildTaskSnapshot(execution: TaskExecution): TaskSnapshot {
     .map((run) => run.tokensOut)
     .filter((value): value is number => value !== null);
   const durations = execution.runs.map((run) => run.durationMs);
+  const passes = execution.runs.filter((run) => run.passed).length;
+  const runs = execution.runs.length;
+  const flaky = runs > 0 && isFlakyInterval(wilsonInterval(passes, runs));
 
   return {
-    runs: execution.runs.length,
-    passes: execution.runs.filter((run) => run.passed).length,
-    flaky: false,
+    runs,
+    passes,
+    flaky,
     costUsdMedian: median(costs),
     tokensInMedian: median(tokensIn),
     tokensOutMedian: median(tokensOut),

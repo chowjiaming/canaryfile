@@ -9,7 +9,7 @@ describe("cli", () => {
     process.stderr.write = (() => true) as typeof process.stderr.write;
     process.stdout.write = (() => true) as typeof process.stdout.write;
     try {
-      const code = await main(["node", "canaryfile", "test"]);
+      const code = await main(["node", "canaryfile", "badge"]);
       expect(code).toBe(EXIT.usage);
     } finally {
       process.stderr.write = err;

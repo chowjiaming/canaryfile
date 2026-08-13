@@ -2,6 +2,20 @@
 import { Command, CommanderError } from "commander";
 import { CliError, EXIT } from "./cli-error.js";
 import { record } from "./record.js";
+import { testCommand } from "./test-cmd.js";
+import type { CompareMode } from "./stats/verdict.js";
+
+function parseRuns(value: string): number {
+  const n = Number(value);
+  if (!Number.isInteger(n) || n < 1 || n > 25) {
+    throw new CommanderError(
+      EXIT.usage,
+      "commander.invalidArgument",
+      "--runs must be an integer 1..25",
+    );
+  }
+  return n;
+}
 
 export async function main(argv: string[]): Promise<number> {
   const program = new Command();
@@ -17,21 +31,7 @@ export async function main(argv: string[]): Promise<number> {
     .command("record")
     .option("--tag <tag>", "run tasks with this tag")
     .option("--task <name>", "run a single task by name")
-    .option(
-      "--runs <n>",
-      "override runs per task",
-      (value) => {
-        const n = Number(value);
-        if (!Number.isInteger(n) || n < 1 || n > 25) {
-          throw new CommanderError(
-            EXIT.usage,
-            "commander.invalidArgument",
-            "--runs must be an integer 1..25",
-          );
-        }
-        return n;
-      },
-    )
+    .option("--runs <n>", "override runs per task", parseRuns)
     .action(async (opts: { tag?: string; task?: string; runs?: number }) => {
       try {
         commandExit = await record({
@@ -49,6 +49,56 @@ export async function main(argv: string[]): Promise<number> {
         throw error;
       }
     });
+
+  program
+    .command("test")
+    .option("--tag <tag>", "run tasks with this tag")
+    .option("--task <name>", "run a single task by name")
+    .option("--runs <n>", "override runs per task", parseRuns)
+    .option("--strict", "fail unless k/n is identical to the snapshot")
+    .option("--lenient", "fail only when current passes are 0")
+    .option("--strict-cost", "promote cost regressions to FAIL")
+    .option("--verbose", "print Wilson [L, U] per task")
+    .action(
+      async (opts: {
+        tag?: string;
+        task?: string;
+        runs?: number;
+        strict?: boolean;
+        lenient?: boolean;
+        strictCost?: boolean;
+        verbose?: boolean;
+      }) => {
+        if (opts.strict && opts.lenient) {
+          process.stderr.write("use only one of --strict or --lenient\n");
+          commandExit = EXIT.usage;
+          return;
+        }
+        const mode: CompareMode = opts.strict
+          ? "strict"
+          : opts.lenient
+            ? "lenient"
+            : "default";
+        try {
+          commandExit = await testCommand({
+            cwd: process.cwd(),
+            mode,
+            ...(opts.tag !== undefined ? { tag: opts.tag } : {}),
+            ...(opts.task !== undefined ? { task: opts.task } : {}),
+            ...(opts.runs !== undefined ? { runs: opts.runs } : {}),
+            ...(opts.strictCost !== undefined ? { strictCost: opts.strictCost } : {}),
+            ...(opts.verbose !== undefined ? { verbose: opts.verbose } : {}),
+          });
+        } catch (error) {
+          if (error instanceof CliError) {
+            process.stderr.write(`${error.message}\n`);
+            commandExit = error.exitCode;
+            return;
+          }
+          throw error;
+        }
+      },
+    );
 
   try {
     await program.parseAsync(argv);
