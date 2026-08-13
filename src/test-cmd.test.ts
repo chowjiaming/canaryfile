@@ -95,6 +95,40 @@ describe("testCommand", () => {
     expect(code).toBe(EXIT.ok);
   });
 
+  it("prints JSON with FAIL when format is json", async () => {
+    const dir = await initGitRepo();
+    await writeYaml(dir, yaml);
+    await commitAll(dir, "init");
+
+    await record({
+      cwd: dir,
+      adapter: fakeAdapter(true),
+      handleSignals: false,
+      now: () => new Date("2026-08-12T21:00:00Z"),
+      write: () => undefined,
+    });
+
+    const chunks: string[] = [];
+    const code = await testCommand({
+      cwd: dir,
+      adapter: fakeAdapter(false),
+      handleSignals: false,
+      now: () => new Date("2026-08-12T21:01:00Z"),
+      format: "json",
+      write: (text) => {
+        chunks.push(text);
+      },
+    });
+
+    expect(code).toBe(EXIT.regression);
+    const parsed: unknown = JSON.parse(chunks.join("\n"));
+    expect(parsed).toMatchObject({
+      version: 1,
+      summary: { regressions: 1 },
+      tasks: [{ name: "smoke-task", snapshot: "5/5", current: "0/5", verdict: "fail" }],
+    });
+  });
+
   it("exits 2 when no snapshot exists", async () => {
     const dir = await initGitRepo();
     await writeYaml(dir, yaml);

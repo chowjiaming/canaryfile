@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const fingerprintSchema = z.strictObject({
+export const fingerprintSchema = z.strictObject({
   adapter: z.string(),
   agentVersion: z.string(),
   model: z.string(),

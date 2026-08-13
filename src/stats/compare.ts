@@ -15,6 +15,7 @@ export type TaskCompare = {
   name: string;
   snapshotKn: string;
   currentKn: string;
+  costUsdMedian: number | null;
   costLabel: string;
   verdict: Verdict;
   intervalLabel: string;
@@ -62,6 +63,7 @@ export function compareExecution(input: {
     name: input.execution.task.name,
     snapshotKn: `${k0}/${n0}`,
     currentKn: `${k1}/${n1}`,
+    costUsdMedian: currentMedian,
     costLabel,
     verdict: combineVerdict(pass, cost),
     intervalLabel: currentInterval

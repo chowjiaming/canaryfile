@@ -21,7 +21,7 @@ canaryfile test      # re-run, exit 1 on regression
 
 Try it against the demo fixture:
 
-git clone <you>/canaryfile && cd canaryfile/examples/fixture
+git clone https://github.com/chowjiaming/canaryfile && cd canaryfile/examples/fixture
 canaryfile record --tag smoke
 
 ## Example output

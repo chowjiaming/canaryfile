@@ -248,14 +248,14 @@ tasks:
     ).resolves.toContain("nested");
   });
 
-  it("returns exit 4 when yaml names an adapter M1 does not ship", async () => {
+  it("returns exit 2 when custom adapter has no command", async () => {
     const dir = await initGitRepo();
     await writeYaml(
       dir,
       `
 version: 1
 agent:
-  adapter: codex
+  adapter: custom
 tasks:
   - name: a
     prompt: p
@@ -274,7 +274,7 @@ tasks:
       expect.unreachable();
     } catch (error) {
       expect(error).toBeInstanceOf(CliError);
-      expect((error as CliError).exitCode).toBe(EXIT.adapter);
+      expect((error as CliError).exitCode).toBe(EXIT.usage);
     }
   });
 });

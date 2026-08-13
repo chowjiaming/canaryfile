@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 import { Command, CommanderError } from "commander";
 import { CliError, EXIT } from "./cli-error.js";
+import { initCanaryfile } from "./init.js";
 import { record } from "./record.js";
 import { testCommand } from "./test-cmd.js";
+import type { ReportFormat } from "./report/types.js";
 import type { CompareMode } from "./stats/verdict.js";
 
 function parseRuns(value: string): number {
@@ -26,6 +28,19 @@ export async function main(argv: string[]): Promise<number> {
     .version("0.1.0")
     .exitOverride()
     .showHelpAfterError(false);
+
+  program.command("init").action(async () => {
+    try {
+      commandExit = await initCanaryfile({ cwd: process.cwd() });
+    } catch (error) {
+      if (error instanceof CliError) {
+        process.stderr.write(`${error.message}\n`);
+        commandExit = error.exitCode;
+        return;
+      }
+      throw error;
+    }
+  });
 
   program
     .command("record")
@@ -59,6 +74,8 @@ export async function main(argv: string[]): Promise<number> {
     .option("--lenient", "fail only when current passes are 0")
     .option("--strict-cost", "promote cost regressions to FAIL")
     .option("--verbose", "print Wilson [L, U] per task")
+    .option("--json", "print the verdict report as JSON")
+    .option("--markdown", "print the verdict report as markdown")
     .action(
       async (opts: {
         tag?: string;
@@ -68,9 +85,16 @@ export async function main(argv: string[]): Promise<number> {
         lenient?: boolean;
         strictCost?: boolean;
         verbose?: boolean;
+        json?: boolean;
+        markdown?: boolean;
       }) => {
         if (opts.strict && opts.lenient) {
           process.stderr.write("use only one of --strict or --lenient\n");
+          commandExit = EXIT.usage;
+          return;
+        }
+        if (opts.json && opts.markdown) {
+          process.stderr.write("use only one of --json or --markdown\n");
           commandExit = EXIT.usage;
           return;
         }
@@ -79,10 +103,16 @@ export async function main(argv: string[]): Promise<number> {
           : opts.lenient
             ? "lenient"
             : "default";
+        const format: ReportFormat = opts.json
+          ? "json"
+          : opts.markdown
+            ? "markdown"
+            : "terminal";
         try {
           commandExit = await testCommand({
             cwd: process.cwd(),
             mode,
+            format,
             ...(opts.tag !== undefined ? { tag: opts.tag } : {}),
             ...(opts.task !== undefined ? { task: opts.task } : {}),
             ...(opts.runs !== undefined ? { runs: opts.runs } : {}),

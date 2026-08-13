@@ -20,6 +20,23 @@ export function formatRecordTable(executions: TaskExecution[]): string {
   return [header, ...rows].join("\n");
 }
 
+export function formatTestBanner(input: {
+  taskCount: number;
+  adapter: string;
+  snapshotCreatedAt: string;
+  snapshotModel: string;
+  currentModel: string;
+  fingerprintChanged: boolean;
+}): string {
+  const taskWord = input.taskCount === 1 ? "task" : "tasks";
+  const changed = input.fingerprintChanged ? "  ← fingerprint changed" : "";
+  return [
+    `canaryfile test — ${input.taskCount} ${taskWord}, adapter ${input.adapter}`,
+    `snapshot: ${input.snapshotCreatedAt} (model ${input.snapshotModel})`,
+    `current:  model ${input.currentModel}${changed}`,
+  ].join("\n");
+}
+
 export function formatTestTable(rows: TaskCompare[], verbose: boolean): string {
   const header = verbose
     ? `${pc.bold("TASK".padEnd(28))} ${"SNAPSHOT".padEnd(10)} ${"CURRENT".padEnd(10)} ${"COST".padEnd(8)} ${"VERDICT".padEnd(8)} INTERVAL`

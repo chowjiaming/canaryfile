@@ -92,4 +92,20 @@ tasks:
 `);
     expect(config.agent.timeoutMs).toBe(300_000);
   });
+
+  it("parses a custom adapter command template", () => {
+    const config = parseCanaryfile(`
+version: 1
+agent:
+  adapter: custom
+  command: "my-agent --prompt {{prompt}}"
+tasks:
+  - name: a
+    prompt: p
+    verify:
+      - run: echo ok
+`);
+    expect(config.agent.adapter).toBe("custom");
+    expect(config.agent.command).toBe("my-agent --prompt {{prompt}}");
+  });
 });

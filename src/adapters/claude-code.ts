@@ -1,6 +1,11 @@
-import { mkdir, writeFile } from "node:fs/promises";
-import path from "node:path";
-import type { AgentOutcome, AgentAdapter, RunContext } from "./types.js";
+import type {
+  AgentAdapter,
+  AgentOutcome,
+  ProcessResult,
+  RunContext,
+  RunProcess,
+} from "./types.js";
+import { writeTranscript } from "./transcript.js";
 
 function asRecord(value: unknown): Record<string, unknown> | null {
   if (typeof value === "object" && value !== null && !Array.isArray(value)) {
@@ -43,20 +48,6 @@ export function parseClaudeJson(stdout: string): {
     model: asString(root.model) ?? modelFromUsage,
   };
 }
-
-export type ProcessResult = {
-  stdout: string;
-  stderr: string;
-  exitCode: number;
-  timedOut: boolean;
-  durationMs: number;
-};
-
-export type RunProcess = (
-  file: string,
-  args: string[],
-  options: { cwd: string; timeoutMs: number },
-) => Promise<ProcessResult>;
 
 export function buildClaudeArgs(input: {
   prompt: string;
@@ -123,8 +114,7 @@ export function createClaudeCodeAdapter(input: {
           durationMs: ctx.timeoutMs,
         };
       }
-      await mkdir(path.dirname(ctx.transcriptPath), { recursive: true });
-      await writeFile(ctx.transcriptPath, result.stdout, "utf8");
+      await writeTranscript(ctx.transcriptPath, result.stdout);
       const parsed = parseClaudeJson(result.stdout);
       return {
         costUsd: parsed.costUsd,

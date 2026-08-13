@@ -1,5 +1,5 @@
 import { execa, ExecaError } from "execa";
-import type { ProcessResult, RunProcess } from "./claude-code.js";
+import type { ProcessResult, RunProcess } from "./types.js";
 
 export const execaRunProcess: RunProcess = async (file, args, options) => {
   const started = Date.now();
@@ -19,6 +19,9 @@ export const execaRunProcess: RunProcess = async (file, args, options) => {
   } catch (error) {
     const durationMs = Date.now() - started;
     if (error instanceof ExecaError) {
+      if (error.code === "ENOENT") {
+        throw error;
+      }
       return {
         stdout: typeof error.stdout === "string" ? error.stdout : "",
         stderr: typeof error.stderr === "string" ? error.stderr : "",

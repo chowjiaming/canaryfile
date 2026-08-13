@@ -30,4 +30,18 @@ describe("cli", () => {
       process.stdout.write = out;
     }
   });
+
+  it("exits 2 when --json and --markdown are combined", async () => {
+    const err = process.stderr.write.bind(process.stderr);
+    const out = process.stdout.write.bind(process.stdout);
+    process.stderr.write = (() => true) as typeof process.stderr.write;
+    process.stdout.write = (() => true) as typeof process.stdout.write;
+    try {
+      const code = await main(["node", "canaryfile", "test", "--json", "--markdown"]);
+      expect(code).toBe(EXIT.usage);
+    } finally {
+      process.stderr.write = err;
+      process.stdout.write = out;
+    }
+  });
 });

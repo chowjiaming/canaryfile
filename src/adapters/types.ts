@@ -22,3 +22,17 @@ export type AgentAdapter = {
   version(): Promise<string>;
   run(task: { prompt: string }, ctx: RunContext): Promise<AgentOutcome>;
 };
+
+export type ProcessResult = {
+  stdout: string;
+  stderr: string;
+  exitCode: number;
+  timedOut: boolean;
+  durationMs: number;
+};
+
+export type RunProcess = (
+  file: string,
+  args: string[],
+  options: { cwd: string; timeoutMs: number },
+) => Promise<ProcessResult>;

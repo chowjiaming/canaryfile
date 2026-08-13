@@ -13,8 +13,26 @@
   "engines": {
     "node": ">=20"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chowjiaming/canaryfile.git"
+  },
+  "homepage": "https://github.com/chowjiaming/canaryfile#readme",
+  "bugs": {
+    "url": "https://github.com/chowjiaming/canaryfile/issues"
+  },
+  "keywords": [
+    "cli",
+    "ai",
+    "agent",
+    "snapshot",
+    "regression",
+    "claude",
+    "codex"
+  ],
   "scripts": {
     "build": "tsup",
+    "prepublishOnly": "npm run build",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },

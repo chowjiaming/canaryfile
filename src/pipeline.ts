@@ -1,6 +1,5 @@
+import { createAdapter } from "./adapters/resolve.js";
 import type { AgentAdapter } from "./adapters/types.js";
-import { createClaudeCodeAdapter } from "./adapters/claude-code.js";
-import { execaRunProcess } from "./adapters/process.js";
 import { CliError, EXIT } from "./cli-error.js";
 import { loadConfig, type LoadedConfig } from "./config/load.js";
 import { selectTasks, type RecordFilters, type ResolvedTask } from "./config/select.js";
@@ -27,18 +26,18 @@ function utcTimestamp(date: Date): string {
   return date.toISOString().replace(/\.\d{3}Z$/, "Z");
 }
 
-async function resolveAdapter(
-  adapterId: string,
-  model: string,
+function resolveAdapter(
+  loaded: LoadedConfig,
   injected: AgentAdapter | undefined,
-): Promise<AgentAdapter> {
+): AgentAdapter {
   if (injected) {
     return injected;
   }
-  if (adapterId !== "claude-code") {
-    throw new CliError(`adapter not found: ${adapterId}`, EXIT.adapter);
-  }
-  return createClaudeCodeAdapter({ runProcess: execaRunProcess, model });
+  return createAdapter({
+    adapterId: loaded.config.agent.adapter,
+    model: loaded.config.agent.model,
+    command: loaded.config.agent.command,
+  });
 }
 
 export async function runPipeline(options: RunOptions): Promise<PipelineResult> {
@@ -49,11 +48,7 @@ export async function runPipeline(options: RunOptions): Promise<PipelineResult> 
 
   try {
     const loaded = await loadConfig(options.cwd);
-    const adapter = await resolveAdapter(
-      loaded.config.agent.adapter,
-      loaded.config.agent.model,
-      options.adapter,
-    );
+    const adapter = resolveAdapter(loaded, options.adapter);
     if (!(await adapter.detect())) {
       throw new CliError(`adapter not found: ${adapter.id}`, EXIT.adapter);
     }
