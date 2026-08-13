@@ -4,7 +4,7 @@
 > Know when a model upgrade, CLAUDE.md edit, or MCP change breaks
 > your workflow — before you merge it.
 
-[DEMO GIF: baseline green table → model change → red regression row]
+![canaryfile test: green baseline, then a model change turns a row red](docs/demo.gif)
 
 ## The problem
 
