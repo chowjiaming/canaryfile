@@ -1,4 +1,4 @@
-.canaryfile/runs/
-.canaryfile/worktrees/
+**/.canaryfile/runs/
+**/.canaryfile/worktrees/
 node_modules/
 dist/

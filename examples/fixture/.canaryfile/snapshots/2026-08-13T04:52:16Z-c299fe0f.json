@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "createdAt": "2026-08-13T04:52:16Z",
+  "fingerprint": {
+    "adapter": "claude-code",
+    "agentVersion": "2.1.229 (Claude Code)",
+    "model": "default",
+    "configHash": "sha256:9edf8b008812a71ee03632c21ad25401f0332db3d328dbcde6e8c769c16c74c6",
+    "contextHash": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "tasks": {
+    "fix-date-off-by-one": {
+      "runs": 1,
+      "passes": 1,
+      "flaky": false,
+      "costUsdMedian": 0.10610939999999999,
+      "tokensInMedian": 8,
+      "tokensOutMedian": 718,
+      "durationMsMedian": 14323,
+      "verifierFailures": {}
+    }
+  }
+}
